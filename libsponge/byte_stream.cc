@@ -8,7 +8,7 @@
 // You will need to add private members to the class declaration in `byte_stream.hh`
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&... /* unused */) {}
+void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
@@ -36,9 +36,9 @@ std::string ByteStream::read(const size_t len) {
     return {};
 }
 
-void ByteStream::end_input() {}
+void ByteStream::end_input() { _end_input = true; }
 
-bool ByteStream::input_ended() const { return {}; }
+bool ByteStream::input_ended() const { return _end_input; }
 
 size_t ByteStream::buffer_size() const { return {}; }
 

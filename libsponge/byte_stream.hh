@@ -18,6 +18,7 @@ class ByteStream {
     // different approaches.
 
     bool _error{};  //!< Flag indicating that the stream suffered an error.
+    bool _end_input{false};
 
   public:
     //! Construct a stream with room for `capacity` bytes.
