@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "util/buffer.hh"
 //! \brief An in-order byte stream.
 
 //! Bytes are written on the "input" side and read from the "output"
@@ -17,8 +18,14 @@ class ByteStream {
     // that's a sign that you probably want to keep exploring
     // different approaches.
 
-    bool _error{};  //!< Flag indicating that the stream suffered an error.
+    bool _error{false};  //!< Flag indicating that the stream suffered an error.
     bool _end_input{false};
+    bool _eof{false};
+    size_t _capacity{0};
+    Buffer _buf{};
+    size_t _bytes_written{0};
+    size_t _bytes_read{0};
+
 
   public:
     //! Construct a stream with room for `capacity` bytes.
