@@ -19,7 +19,7 @@ class StreamReassembler {
 
     class segment {
       public:
-        segment(std::string &&data, size_t &&index) : _data(data), _index(index) {}
+        segment(std::string &&data, size_t index) : _data(data), _index(index) {}
         std::string _data;
         size_t _index;
 
@@ -33,7 +33,7 @@ class StreamReassembler {
     size_t _finIdx{0};
     size_t _unassembled_bytes{0};
     std::deque<segment> _bufs{};
-    void tryPush(const std::string &&data, const size_t index);
+    void tryPush(const std::string &data, const size_t index);
     // void store(const std::string &&data, size_t index);
     size_t usableCapacity() const;
 

@@ -15,7 +15,7 @@ using namespace std;
 #define PUSH(data, index, len)                                                                                         \
     size_t write_len = stream_out().write(data);                                                                       \
     _headIdx += write_len;                                                                                             \
-    if (_eof && (index + write_len == _finIdx)) {                                                                      \
+    if (_eof && (_headIdx == _finIdx)) {                                                                               \
         stream_out().end_input();                                                                                      \
     }                                                                                                                  \
     if (write_len < len) {                                                                                             \
@@ -27,8 +27,6 @@ StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity),
 
 size_t StreamReassembler::unassembled_bytes() const { return _unassembled_bytes; }
 
-size_t StreamReassembler::usableCapacity() const { return _capacity - stream_out().buffer_size(); }
-
 //! \details This function accepts a substring (aka a segment) of bytes,
 //! possibly out-of-order, from the logical stream, and assembles any newly
 //! contiguous substrings and writes them into the output stream in order.
@@ -38,18 +36,19 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         _eof = true;
         _finIdx = index + len;
     }
+    size_t remaining_capacity = stream_out().remaining_capacity();
     // 在区间[first unread : first unacceptable]外的就丢弃
-    if (len + index < _headIdx || index > _headIdx + _capacity || len == 0)
+    if (len + index < _headIdx || index > _headIdx + remaining_capacity)
         return;
     // 限制头尾部
-    const size_t idx = index > _headIdx ? index : _headIdx;
-    const size_t length = idx - index + len > _headIdx + _capacity ? _headIdx + _capacity : idx - index + len;
-    tryPush(move(string().assign(data, (idx - index), length)), idx);
+    const size_t start = index > _headIdx ? index : _headIdx;
+    size_t end = index + len > _headIdx + remaining_capacity ? _headIdx + remaining_capacity : index + len;
+    tryPush(data.substr(start - index, end - index), start);
 }
 
 bool StreamReassembler::empty() const { return _unassembled_bytes == 0; }
 
-void StreamReassembler::tryPush(const string &&data, const size_t index) {
+void StreamReassembler::tryPush(const string &data, const size_t index) {
     const size_t len = data.length();
     if (index == _headIdx) {
         size_t write_len = stream_out().write(data);
@@ -62,20 +61,31 @@ void StreamReassembler::tryPush(const string &&data, const size_t index) {
             _bufs.emplace_back(segment(move(string().assign(data, write_len, len - write_len)), index + write_len));
             _unassembled_bytes += len - write_len;  //加入缓存处就得 记录下
         }
+    } else {
+        _bufs.emplace_back(segment(move(string().assign(data, 0, len)), index + 0));
+        _unassembled_bytes += len;  //加入缓存处就得 记录下
     }
     if (_bufs.empty())
         return;
     // 整理存储的 unassembled 数据 处理冗余数据
     deque<segment> tmp;
     sort(_bufs.begin(), _bufs.end());
+    while (_bufs.front()._index + _bufs.front()._data.length() < _headIdx) {
+        _unassembled_bytes -= _bufs.front()._data.length();
+        _bufs.pop_front();
+    }
     tmp.emplace_back(_bufs.front());
     for (size_t i = 1; i < _bufs.size(); i++) {
         auto &back = tmp.back();
         if (back._index + back._data.length() < _bufs[i]._index) {
-            // 前后不想交
+            // 前后不相交
             tmp.emplace_back(_bufs[i]);
+        } else if (back._index <= _bufs[i]._index &&
+                   back._index + back._data.length() >= _bufs[i]._index + _bufs[i]._data.length()) {
+            _unassembled_bytes -= _bufs[i]._data.length();
+            continue;
         } else {
-            const size_t add_idx = back._index + back._data.length();
+            const size_t add_idx = back._index + back._data.length() - _bufs[i]._index;
             const size_t add_len = _bufs[i]._data.length() - (add_idx - _bufs[i]._index);
             if (add_len > 0) {  // 不考虑 前一个包含第二个的情况, 处理重合部分
                 back._data += string().assign(_bufs[i]._data, add_idx, add_len);
@@ -83,8 +93,9 @@ void StreamReassembler::tryPush(const string &&data, const size_t index) {
             }
         }
     }
-    swap(tmp, _bufs);
-    while (!_bufs.empty() && _bufs.front()._index <= _headIdx) {  //如果可以发出就发出
+    // swap(tmp, _bufs);
+    _bufs = tmp;
+    if(!_bufs.empty() && _bufs.front()._index <= _headIdx) {  //如果可以发出就发出
         auto tmpSeg = move(_bufs.front());
         _bufs.pop_front();
         string str = tmpSeg._data;
@@ -96,4 +107,4 @@ void StreamReassembler::tryPush(const string &&data, const size_t index) {
     }
 }
 
-// void StreamReassembler::store(const std::string &&data, size_t index) { while () }
+// void StreamReassembler::tryPush(const string &&data, const size_t index) {}
