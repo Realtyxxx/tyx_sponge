@@ -3,7 +3,9 @@
 
 #include "byte_stream.hh"
 
+#include <algorithm>
 #include <cstdint>
+#include <deque>
 #include <string>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
@@ -14,6 +16,25 @@ class StreamReassembler {
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+
+    class segment {
+      public:
+        segment(std::string &&data, size_t &&index) : _data(data), _index(index) {}
+        std::string _data;
+        size_t _index;
+
+        bool operator<(const segment &b) {
+            return _index < b._index || (_index == b._index && _data.length() > b._data.length());
+        }
+    };
+
+    size_t _headIdx{0};
+    bool _eof{false};
+    size_t _finIdx{0};
+    size_t _unassembled_bytes{0};
+    std::deque<segment> _bufs{};
+    void tryPush(const std::string &&data, const size_t index);
+    // void store(const std::string &&data, size_t index);
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
