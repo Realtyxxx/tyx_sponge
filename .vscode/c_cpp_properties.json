@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${default}",
+                "/home/realtyxxx/tyx_sponge/libsponge",
+                "/home/realtyxxx/tyx_sponge/libsponge/util"
+            ],
+            "compilerPath": "/usr/bin/gcc-11",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
