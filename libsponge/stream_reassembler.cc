@@ -93,9 +93,9 @@ void StreamReassembler::tryPush(const string &data, const size_t index) {
             }
         }
     }
-    // swap(tmp, _bufs);
-    _bufs = tmp;
-    if(!_bufs.empty() && _bufs.front()._index <= _headIdx) {  //如果可以发出就发出
+    swap(tmp, _bufs);
+    // _bufs = tmp;
+    if (!_bufs.empty() && _bufs.front()._index <= _headIdx) {  //如果可以发出就发出
         auto tmpSeg = move(_bufs.front());
         _bufs.pop_front();
         string str = tmpSeg._data;
@@ -106,5 +106,3 @@ void StreamReassembler::tryPush(const string &data, const size_t index) {
         PUSH(tmpStr, _headIdx, tmpLen);
     }
 }
-
-// void StreamReassembler::tryPush(const string &&data, const size_t index) {}

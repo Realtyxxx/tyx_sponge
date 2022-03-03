@@ -34,8 +34,6 @@ class StreamReassembler {
     size_t _unassembled_bytes{0};
     std::deque<segment> _bufs{};
     void tryPush(const std::string &data, const size_t index);
-    // void store(const std::string &&data, size_t index);
-    size_t usableCapacity() const;
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
