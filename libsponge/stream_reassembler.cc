@@ -68,7 +68,7 @@ void StreamReassembler::tryPush(const string &data, const size_t index) {
     // 整理存储的 unassembled 数据 处理冗余数据
     deque<segment> tmp;
     sort(_bufs.begin(), _bufs.end());
-    while (!_bufs.empty() && (_bufs.front()._index + _bufs.front()._data.length() < _headIdx)) { // 忘记了判断是否空
+    while (!_bufs.empty() && (_bufs.front()._index + _bufs.front()._data.length() < _headIdx)) {  // 忘记了判断是否空
         _unassembled_bytes -= _bufs.front()._data.length();
         _bufs.pop_front();
     }

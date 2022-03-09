@@ -22,6 +22,7 @@ class TCPReceiver {
     std::optional<WrappingInt32> _isn{};
     std::optional<WrappingInt32> _ackno{};
     std::optional<WrappingInt32> _fin{};
+    // 使用optional，可以不用在乎使用什么初始值，因为isn的值可能随机，而使用optional相当于用了一个bool变量加一个值的包装
 
   public:
     //! \brief Construct a TCP receiver
