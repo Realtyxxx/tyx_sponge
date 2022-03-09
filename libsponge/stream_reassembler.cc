@@ -65,15 +65,15 @@ void StreamReassembler::tryPush(const string &data, const size_t index) {
         _bufs.emplace_back(segment(move(string().assign(data, 0, len)), index + 0));
         _unassembled_bytes += len;  //加入缓存处就得 记录下
     }
-    if (_bufs.empty())
-        return;
     // 整理存储的 unassembled 数据 处理冗余数据
     deque<segment> tmp;
     sort(_bufs.begin(), _bufs.end());
-    while (_bufs.front()._index + _bufs.front()._data.length() < _headIdx) {
+    while (!_bufs.empty() && (_bufs.front()._index + _bufs.front()._data.length() < _headIdx)) { // 忘记了判断是否空
         _unassembled_bytes -= _bufs.front()._data.length();
         _bufs.pop_front();
     }
+    if (_bufs.empty())
+        return;
     tmp.emplace_back(_bufs.front());
     for (size_t i = 1; i < _bufs.size(); i++) {
         auto &back = tmp.back();
@@ -81,15 +81,22 @@ void StreamReassembler::tryPush(const string &data, const size_t index) {
             // 前后不相交
             tmp.emplace_back(_bufs[i]);
         } else if (back._index <= _bufs[i]._index &&
-                   back._index + back._data.length() >= _bufs[i]._index + _bufs[i]._data.length()) {
+                   back._index + back._data.length() >= _bufs[i]._index + _bufs[i]._data.length()) {  // 包含
             _unassembled_bytes -= _bufs[i]._data.length();
             continue;
-        } else {
-            const size_t add_idx = back._index + back._data.length() - _bufs[i]._index;
-            const size_t add_len = _bufs[i]._data.length() - (add_idx - _bufs[i]._index);
-            if (add_len > 0) {  // 不考虑 前一个包含第二个的情况, 处理重合部分
-                back._data += string().assign(_bufs[i]._data, add_idx, add_len);
-                _unassembled_bytes -= add_idx - _bufs[i]._index;
+        } else {  // 合并
+            // const size_t add_idx = back._index + back._data.length() - _bufs[i]._index;
+            // const size_t add_len = _bufs[i]._data.length() - (add_idx - _bufs[i]._index);
+            // if (add_len > 0) {  // 不考虑 前一个包含第二个的情况, 处理重合部分
+            //     back._data += string().assign(_bufs[i]._data, add_idx, add_len);
+            //     _unassembled_bytes -= add_idx - _bufs[i]._index;
+            // }
+            const int32_t buf_length = _bufs[i]._data.length();
+            const int32_t sub_begin = back._index + back._data.length() - _bufs[i]._index;
+            const int32_t sub_len = buf_length - sub_begin;
+            if (sub_begin >= 0 && sub_begin < buf_length && sub_len > 0 && sub_len <= buf_length) {
+                back._data += _bufs[i]._data.substr(sub_begin, sub_len);
+                _unassembled_bytes -= sub_begin;
             }
         }
     }
