@@ -171,6 +171,7 @@ int main() {
             for (unsigned int i = 0; i + TCPConfig::MAX_PAYLOAD_SIZE < min(bigstring.size(), window_size);
                  i += TCPConfig::MAX_PAYLOAD_SIZE) {
                 const size_t expected_size = min(TCPConfig::MAX_PAYLOAD_SIZE, min(bigstring.size(), window_size) - i);
+                // printf("i == %u\n", i);
                 test.execute(ExpectSegment{}
                                  .with_no_flags()
                                  .with_payload_size(expected_size)

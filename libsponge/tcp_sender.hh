@@ -6,9 +6,7 @@
 #include "tcp_segment.hh"
 #include "wrapping_integers.hh"
 
-#include <deque>
 #include <functional>
-#include <list>
 #include <queue>
 
 //! \brief The "sender" part of a TCP implementation.
@@ -27,14 +25,24 @@ class TCPSender {
 
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
+    unsigned int _retransmission_timeout;
+    unsigned int _consecutive_retransmissions{0};
+    unsigned int _total_time{0};
+    bool _timer_running{false};
 
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
 
     //! the (absolute) sequence number for the next byte to be sent
-    uint64_t _next_seqno{0};
+    uint64_t _next_seqno{0};  // 下一个要被发送的字节
+    uint64_t _ack_seqno{0};   // 最大的被确认的字节号
 
-    std::list<TCPSegment> outstandings{};
+    std::queue<TCPSegment> _outstandings{};
+
+    bool _syn_sent{false};
+    bool _fin_sent{false};
+    uint64_t _window_size{1};
+    bool _win_0_flag{false};
 
   public:
     //! Initialize a TCPSender
@@ -80,8 +88,9 @@ class TCPSender {
     //! which will need to fill in the fields that are set by the TCPReceiver
     //! (ackno and window size) before sending.
     std::queue<TCPSegment> &segments_out() { return _segments_out; }
-    //!@}
 
+    std::queue<TCPSegment> &outstandings() { return _outstandings; }
+    //!@}
     //! \name What is the next sequence number? (used for testing)
     //!@{
 
