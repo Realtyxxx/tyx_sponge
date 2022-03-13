@@ -70,11 +70,16 @@ void TCPSender::fill_window() {
 //! \param window_size The remote receiver's advertised window size
 void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) {
     uint64_t ack_abs = unwrap(ackno, _isn, next_seqno_absolute());
-    _window_size = window_size;
+    // _window_size = window_size;
+    uint32_t tmp_win = window_size;
+    // changed here
+    _window_size =  (ackno +  tmp_win)- next_seqno();
     if (ack_abs > _next_seqno || ack_abs <= _ack_seqno)  // 无效确认号
         return;
+
     _retransmission_timeout = _initial_retransmission_timeout;  // 如果有效就需要重置重传时限
     _consecutive_retransmissions = 0;
+
     while (!outstandings().empty()) {  // 清理发出的备份队列
         TCPSegment front = outstandings().front();
         uint64_t seqno = unwrap(front.header().seqno, _isn, _next_seqno) + front.length_in_sequence_space();
@@ -98,7 +103,7 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
             return;
         }
     }
-    if (window_size == 0) { // 如果发过来说明没有空间了
+    if (window_size == 0) {  // 如果发过来说明没有空间了
         _window_size = 1;
         _win_0_flag = true;
     } else {
@@ -132,3 +137,6 @@ void TCPSender::send_empty_segment() {
     empty.header().seqno = next_seqno();
     segments_out().push(empty);
 }
+
+// TODO: 我感觉这里面的window_size 可能有点儿小小的问题,这里直接把window_size
+// 作为了新的window_size,而实际上这个只是指明了还可以接受的多少：！！这个窗口大小应当是ackno + window_size - next_seqno
