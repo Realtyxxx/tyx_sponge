@@ -38,7 +38,6 @@ void TCPSender::fill_window() {
         segments_out().push(seg);
         outstandings().push(seg);
         _syn_sent = true;
-        return;
     } else if (stream_in().eof()) {
         seg.header().fin = true;
         seg.header().seqno = next_seqno();
@@ -47,7 +46,6 @@ void TCPSender::fill_window() {
         segments_out().push(seg);
         outstandings().push(seg);
         _fin_sent = true;
-        return;
     } else {
         while (_window_size > 0 && stream_in().buffer_size()) {
             seg.header().seqno = next_seqno();
@@ -62,7 +60,13 @@ void TCPSender::fill_window() {
             _window_size -= seg.length_in_sequence_space();
             segments_out().push(seg);
             outstandings().push(seg);
+            if (seg.header().fin) break;
         }
+    }
+    if (_outstandings.empty()) {
+      _retransmission_timeout = _initial_retransmission_timeout;
+      _consecutive_retransmissions = 0;
+      _total_time = 0;
     }
 }
 
@@ -73,7 +77,7 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
     // _window_size = window_size;
     uint32_t tmp_win = window_size;
     // changed here
-    _window_size =  (ackno +  tmp_win)- next_seqno();
+    _window_size = (ackno + tmp_win) - next_seqno();
     if (ack_abs > _next_seqno || ack_abs <= _ack_seqno)  // 无效确认号
         return;
 
@@ -127,6 +131,7 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
     }
     if (outstandings().empty()) {
         _timer_running = false;
+        _total_time = 0;
     }
 }
 
