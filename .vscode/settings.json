@@ -4,6 +4,11 @@
     "stdexcept": "cpp",
     "string_view": "cpp",
     "iostream": "cpp",
-    "string": "cpp"
-  }
+    "string": "cpp",
+    "deque": "cpp",
+    "list": "cpp",
+    "unordered_map": "cpp",
+    "vector": "cpp"
+  },
+  "C_Cpp.errorSquiggles": "Disabled"
 }

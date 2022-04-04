@@ -4,13 +4,15 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "/home/realtyxxx/tyx_sponge/libsponge",
-                "/home/realtyxxx/tyx_sponge/libsponge/util"
+                "/home/realtyxxx/project/tyx_sponge/libsponge",
+                "/home/realtyxxx/project/tyx_sponge/libsponge/util",
+                "/home/realtyxxx/project/tyx_sponge/libsponge/tcp_helpers"
             ],
             "compilerPath": "/usr/bin/gcc-11",
             "cStandard": "gnu17",
             "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4
