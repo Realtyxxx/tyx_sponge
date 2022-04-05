@@ -127,7 +127,7 @@ void NetworkInterface::tick(const size_t ms_since_last_tick) {
                 ++it;
             }
         } else {
-            // arp 请求的国旗
+            // arp 请求的过期
             if (time > 5000) {
                 time = 0;
                 ARPMessage _arpm;
