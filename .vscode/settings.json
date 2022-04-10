@@ -8,7 +8,16 @@
     "deque": "cpp",
     "list": "cpp",
     "unordered_map": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "optional": "cpp",
+    "tuple": "cpp",
+    "array": "cpp",
+    "memory": "cpp",
+    "istream": "cpp",
+    "functional": "cpp",
+    "utility": "cpp",
+    "variant": "cpp",
+    "ranges": "cpp"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }

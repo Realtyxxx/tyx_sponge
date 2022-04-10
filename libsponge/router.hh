@@ -49,6 +49,8 @@ class Router {
     //! datagram's destination address.
     void route_one_datagram(InternetDatagram &dgram);
 
+    std::deque<std::tuple<uint32_t, uint8_t, std::optional<Address>, size_t>> _route_table{};
+
   public:
     //! Add an interface to the router
     //! \param[in] interface an already-constructed network interface
@@ -69,6 +71,9 @@ class Router {
 
     //! Route packets between the interfaces
     void route();
+
+    //! comp the prefix of ip
+    bool comp(uint32_t x, uint32_t y, uint8_t len);
 };
 
 #endif  // SPONGE_LIBSPONGE_ROUTER_HH
