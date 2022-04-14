@@ -20,7 +20,7 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
         }
     }
     if (!_fin.has_value() && seg.header().fin) {  // 处理fin
-            _fin = _seqno;
+        _fin = _seqno;
     }
     string _payload = seg.payload().copy();
     size_t offset = int(!seg.header().syn);

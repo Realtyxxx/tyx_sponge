@@ -60,13 +60,14 @@ void TCPSender::fill_window() {
             _window_size -= seg.length_in_sequence_space();
             segments_out().push(seg);
             outstandings().push(seg);
-            if (seg.header().fin) break;
+            if (seg.header().fin)
+                break;
         }
     }
     if (_outstandings.empty()) {
-      _retransmission_timeout = _initial_retransmission_timeout;
-      _consecutive_retransmissions = 0;
-      _total_time = 0;
+        _retransmission_timeout = _initial_retransmission_timeout;
+        _consecutive_retransmissions = 0;
+        _total_time = 0;
     }
 }
 
